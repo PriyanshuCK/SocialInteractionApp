@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy"
+            content="script-src 'self' 'unsafe-inline'; style-src 'self' cdn.jsdelivr.net 'unsafe-inline';">
+        <title>Email Verification</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+    </head>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .card {
+            border-radius: 10px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            color: green
+        }
+
+        .error {
+            color: red;
+        }
+
+        .hideBtn {
+            display: none;
+        }
+
+        .showBtn {
+            display: flex;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: rgba(1, 116, 210, 0.971);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .hideCard {
+            display: none;
+        }
+
+        .showCard {
+            display: block;
+        }
+
+    </style>
+
+    <body>
+
+        <div class="card showCard" id="statusCard">
+            <div class="icon">
+                <span id="statusIcon" class=""></span>
+            </div>
+            <div id="statusMessage" class="">
+            </div>
+            <a href="http://localhost:3000/login" id="btn" class="">
+                Login
+            </a>
+        </div>
+        <div class="hideCard" id="formCard">
+            <div class="container mx-auto p-4">
+                <h2 class="text-2xl font-semibold mb-4">Password Reset</h2>
+                <form id="resetForm" class="bg-white p-4 shadow-md rounded-lg" onsubmit="return validateForm()">
+                    <div class="mb-4">
+                        <label for="newPassword" class="block text-sm font-medium text-gray-600">New Password:</label>
+                        <input type="password" id="newPassword" name="password" required
+                            class="mt-1 p-2 block w-full border rounded-lg focus:outline-none focus:border-blue-500">
+                        <span id="message1" class="text-red-500"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-600">Confirm
+                            Password:</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required
+                            class="mt-1 p-2 block w-full border rounded-lg focus:outline-none focus:border-blue-500">
+                        <span id="message2" class="text-red-500"></span>
+                    </div>
+
+                    <input type="hidden" id="userId" name="userId">
+
+                    <button type="submit" name="submit" id="submitResetForm"
+                        class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none">
+                        Change Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="script.js">
+        </script>
+    </body>
+
+</html>
