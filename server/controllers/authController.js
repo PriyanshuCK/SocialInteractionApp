@@ -37,6 +37,9 @@ export const login = async (req, res, next) => {
     try {
         if (!(email || password)) {
             next("Please provide user credentials!");
+            res.status(500).json({
+                message: "Please provide user credentials!"
+            });
             return;
         }
 
@@ -47,17 +50,26 @@ export const login = async (req, res, next) => {
 
         if (!user) {
             next("Invalid email or password!");
+            res.status(500).json({
+                message: "Invalid email or password!"
+            });
             return;
         }
 
         if (!user?.verified) {
-            next("User email is not verified. Check your email account account and verify your email.");
+            next("User email is not verified. Check your email account and verify your email.");
+            res.status(500).json({
+                message: "User email is not verified. Check your email account and verify your email."
+            });
             return;
         }
 
         const isMatch = await compareString(password, user?.password);
         if (!isMatch) {
             next("Invalid email or password!");
+            res.status(500).json({
+                message: "Invalid email or password!"
+            });
             return;
         }
 
@@ -66,7 +78,7 @@ export const login = async (req, res, next) => {
 
         res.status(201).json({
             success: true,
-            message: "Login successfully",
+            message: "Logged in successfully",
             user,
             token,
         });

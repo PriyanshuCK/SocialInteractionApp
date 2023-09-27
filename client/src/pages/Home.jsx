@@ -1,25 +1,141 @@
-import React, { useState } from 'react';
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from "react-redux";
 import { TopBar, ProfileCard, FriendsCard, CustomButton, TextInput, Loading, PostCard, EditProfile } from "../components";
-import { suggest, requests, posts } from '../assets/data';
 import { Link } from 'react-router-dom';
 import { NoProfile } from '../assets';
 import { UserPlusIcon, PhotoIcon, VideoCameraIcon, GifIcon } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
+import { apiRequest, deletePost, fetchPosts, getUserInfo, handleFileUpload, likePost, sendFriendRequest } from "../utils";
+import { UserLogin } from '../redux/userSlice';
 
 const Home = () => {
     const { user, edit } = useSelector(state => state.user);
-    const [friendRequest, setFriendRequest] = useState(requests);
-    const [suggestedFriends, setSuggestedFriends] = useState(suggest);
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { posts } = useSelector(state => state.post);
+    const [friendRequest, setFriendRequest] = useState([]);
+    const [suggestedFriends, setSuggestedFriends] = useState([]);
+    const { register, handleSubmit, reset, formState: { errors } } = useForm();
     const [errMsg, setErrMsg] = useState("");
     const [posting, setPosting] = useState(false);
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState(null);
 
-    const handlePostSubmit = async (data) => {
 
+    const dispatch = useDispatch();
+
+    const handlePostSubmit = async (data) => {
+        setPosting(true);
+        try {
+            const uri = file && (await handleFileUpload(file));
+            const newData = uri ? { ...data, image: uri } : data;
+
+            const res = await apiRequest({
+                url: "/posts/create-post",
+                data: newData,
+                token: user?.token,
+                method: "POST",
+            });
+
+            if (res?.status === "failed") {
+                setErrMsg(res);
+            } else {
+                reset({
+                    description: "",
+                });
+                setFile(null);
+                setErrMsg("");
+                await fetchPost();
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        setPosting(false);
     };
+
+    const fetchPost = async () => {
+        setLoading(true);
+        await fetchPosts(user?.token, dispatch);
+        setLoading(false);
+    };
+
+    const handleLikePost = async (uri) => {
+        await likePost({ uri: uri, token: user?.token });
+        await fetchPost();
+    };
+
+    const handleDelete = async (id) => {
+        await deletePost(id, user.token);
+        await fetchPost();
+    };
+
+    const fetchFriendRequests = async () => {
+        try {
+            const res = await apiRequest({
+                url: "/users/get-friend-request",
+                token: user?.token,
+                method: "POST",
+            });
+
+            setFriendRequest(res?.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleFriendRequest = async (id) => {
+        try {
+            const res = await sendFriendRequest(id, user.token);
+            await fetchFriendRequests();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const acceptFriendRequest = async (id, status) => {
+        try {
+            const res = await apiRequest({
+                url: "/users/accept-request",
+                token: user?.token,
+                method: "POST",
+                data: { rid: id, status }
+            });
+
+            setFriendRequest(res?.data);
+            getUser();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const fetchSuggestedFriends = async () => {
+        try {
+            const res = await apiRequest({
+                url: "/users/suggested-friends",
+                token: user?.token,
+                method: "POST",
+            });
+
+            setSuggestedFriends(res?.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const getUser = async () => {
+        const res = await getUserInfo(user?.token);
+        const newData = { token: user?.token, ...res };
+        dispatch(UserLogin(newData));
+    };
+
+    useEffect(() => {
+        setLoading(true);
+        getUser();
+        fetchPost();
+        fetchFriendRequests();
+        fetchSuggestedFriends();
+    }, []);
+
     return (
         <>
             <div className='home w-full px-0 lg:px-10 pb-20 2xl:px-40 bg-gray-200 dark:bg-gray-900 lg:rounded-lg h-screen overflow-hidden'>
@@ -114,7 +230,7 @@ const Home = () => {
                             <Loading />
                         ) : posts?.length > 0 ? (
                             posts?.map((post) => (
-                                <PostCard key={post?._id} post={post} user={user} deletePost={() => { }} likePost={() => { }} />
+                                <PostCard key={post?._id} post={post} user={user} deletePost={handleDelete} likePost={handleLikePost} />
                             ))
                         ) : ""}
                     </div>
@@ -147,10 +263,12 @@ const Home = () => {
                                             <div className='flex gap-1'>
                                                 <CustomButton
                                                     title="Accept"
+                                                    onClick={() => acceptFriendRequest(_id, "Accepted")}
                                                     containerStyles="bg-primary-500 text-xs text-gray-950 dark:text-gray-50 px-1.5 py-1 rounded-full"
                                                 />
                                                 <CustomButton
                                                     title="Deny"
+                                                    onClick={() => acceptFriendRequest(_id, "Denied")}
                                                     containerStyles="border border-gray-600 dark:border-gray-400 text-xs text-gray-950 dark:text-gray-50 px-1.5 py-1 rounded-full"
                                                 />
                                             </div>
@@ -185,7 +303,7 @@ const Home = () => {
                                             <div className='flex gap-1'>
                                                 <button
                                                     className='bg-primary-500 text-sm text-white p-1 rounded'
-                                                    onClick={() => { }}>
+                                                    onClick={() => handleFriendRequest(friend._id)}>
                                                     <UserPlusIcon className='w-4 h-4 text-white' />
                                                 </button>
                                             </div>

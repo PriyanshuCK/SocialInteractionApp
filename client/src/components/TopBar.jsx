@@ -6,6 +6,7 @@ import { TextInput, CustomButton } from "./index";
 import { useForm } from "react-hook-form";
 import { SetTheme } from "../redux/theme";
 import { Logout } from "../redux/userSlice";
+import { fetchPosts } from '../utils';
 
 const TopBar = () => {
     const { theme } = useSelector(state => state.theme);
@@ -18,7 +19,7 @@ const TopBar = () => {
     } = useForm();
 
     const handleSearch = async (data) => {
-
+        await fetchPosts(user.token, dispatch, "", data);
     };
 
     const handleTheme = () => {

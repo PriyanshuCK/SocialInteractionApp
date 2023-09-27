@@ -5,7 +5,20 @@ import moment from 'moment';
 import { ChatBubbleOvalLeftIcon, HeartIcon as HeartIconOutline, TrashIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { CommentForm, Loading, ReplyCard } from "./index";
-import { postComments } from '../assets/data';
+import { apiRequest } from '../utils';
+
+const getPostComments = async (id) => {
+    try {
+        const res = await apiRequest({
+            url: "/posts/comments/" + id,
+            method: "GET",
+        });
+
+        return res?.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
 
 const PostCard = ({ post, user, deletePost, likePost }) => {
     const [showAll, setShowAll] = useState(0);
@@ -15,14 +28,16 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
     const [replyComments, setReplyComments] = useState(0);
     const [showComments, setShowComments] = useState(0);
 
-    const getComments = async () => {
+    const getComments = async (id) => {
         setReplyComments(0);
-        setComments(postComments);
+        const result = await getPostComments(id);
+        setComments(result);
         setLoading(false);
     };
 
-    const handleLike = async () => {
-
+    const handleLike = async (uri) => {
+        await likePost(uri);
+        await getComments(post?._id);
     };
 
     return (
@@ -33,7 +48,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                         <img
                             src={post?.userId?.profileUrl ?? NoProfile}
                             alt={post?.userId?.firstName}
-                            className='w-14 h-14 object-cover rounded-full'
+                            className='w-14 h-auto object-cover rounded-full'
                         />
                     </Link>
                     <div className='w-full flex justify-between'>
@@ -46,8 +61,11 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                             <span className='text-gray-600 dark:text-gray-400'>
                                 {post?.userId?.location}
                             </span>
+                            <span className='flex md:hidden text-gray-600 dark:text-gray-400 text-sm'>
+                                {moment(post?.createdAt ?? "2023-01-01").fromNow()}
+                            </span>
                         </div>
-                        <span className='text-gray-600 dark:text-gray-400'>
+                        <span className='hidden md:flex text-gray-600 dark:text-gray-400'>
                             {moment(post?.createdAt ?? "2023-01-01").fromNow()}
                         </span>
                     </div>
@@ -76,7 +94,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                         }
                     </p>
                     {
-                        post?.image && (
+                        post?.image && post.image.includes("image") && (
                             <img
                                 src={post?.image}
                                 alt="Post"
@@ -84,9 +102,22 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                             />
                         )
                     }
+                    {
+                        post?.image && post.image.includes("video") && (
+                            <video
+                                src={post?.image}
+                                alt="Post"
+                                className='w-full mt-2 rounded-lg'
+                                controls
+                                autoPlay
+                                muted
+                                loop
+                            />
+                        )
+                    }
                 </div>
                 <div className='mt-4 flex justify-between items-center px-3 py-2 text-gray-600 dark:text-gray-400 text-base border-t border-gray-300 dark:border-gray-700'>
-                    <p className='flex gap-2 items-center text-base cursor-pointer'>
+                    <p className='flex gap-2 items-center text-base cursor-pointer' onClick={() => handleLike("/posts/like/" + post?._id)}>
                         {post?.likes?.includes(user?._id) ? (
                             <HeartIconSolid className="w-5 h-5 text-primary-500" />
 
@@ -113,6 +144,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                         )
                     }
                 </div>
+
                 {showComments === post?._id && (
                     <div className='w-full mt-4 border-t border-gray-300 dark:border-gray-700 pt-4'>
                         <CommentForm
@@ -151,7 +183,10 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                                                 {comment?.comment}
                                             </p>
                                             <div className='mt-2 flex gap-6'>
-                                                <p className='flex gap-2 items-center text-base text-gray-600 dark:text-gray-400 cursor-pointer'>
+                                                <p className='flex gap-2 items-center text-base text-gray-600 dark:text-gray-400 cursor-pointer'
+                                                    onClick={() => {
+                                                        handleLike("/posts/like-comment/" + comment?._id);
+                                                    }}>
                                                     {comment?.likes?.includes(user?._id) ? (
                                                         <HeartIconSolid className='w-5 h-5 text-primary-500' />
                                                     ) : (

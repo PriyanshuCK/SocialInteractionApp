@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { BgImage } from '../assets';
+import { apiRequest } from "../utils";
+import { UserLogin } from '../redux/userSlice';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors }, } = useForm({ mode: "onChange" });
@@ -12,9 +14,29 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const dispatch = useDispatch();
     const onSubmit = async (data) => {
+        setIsSubmitting(true);
 
-    };
-    return (
+        try {
+            const res = await apiRequest({
+                url: "/auth/login",
+                data: data,
+                method: "POST",
+            });
+            console.log(res);
+            if (res?.success !== true) {
+                setErrMsg(res);
+            } else {
+                setErrMsg("");
+
+                const newData = { token: res?.token, ...res?.user };
+                dispatch(UserLogin(newData));
+                window.location.replace("/");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        setIsSubmitting(false);
+    }; return (
         <div className='bg-gray-200 dark:bg-gray-900 w-full h-[100vh] flex items-center justify-center p-6'>
             <div className='w-full md:w-2/3 h-fit lg:h-full 2xl:h-5/6 py-8 lg:py-0 flex bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-xl'>
                 <div className="w-full lg:w-1/2 h-full p-10 2xl:px-20 flex flex-col justify-center">

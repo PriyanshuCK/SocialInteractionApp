@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { BgImage } from '../assets';
+import { apiRequest } from "../utils";
 
 const Register = () => {
     const { register, handleSubmit, getValues, formState: { errors }, } = useForm({ mode: "onChange" });
@@ -12,7 +13,27 @@ const Register = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const dispatch = useDispatch();
     const onSubmit = async (data) => {
+        setIsSubmitting(true);
 
+        try {
+            const res = await apiRequest({
+                url: "/auth/register",
+                data: data,
+                method: "POST",
+            });
+
+            setErrMsg(res);
+
+            if (res?.status !== "failed") {
+                setTimeout(() => {
+                    window.location.replace("/login");
+                }, 5000);
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+        setIsSubmitting(false);
     };
     return (
         <div className='bg-gray-200 dark:bg-gray-900 w-full h-[100vh] flex items-center justify-center p-6'>

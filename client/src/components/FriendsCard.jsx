@@ -15,7 +15,7 @@ const FriendsCard = ({ friends }) => {
                         friends?.map((friend) => {
                             return (
                                 <>
-                                    <Link to={"/profile/" + friend?._id} key={friend._id} className='w-full flex gap-4 items-center cursor-pointer'>
+                                    <Link to={"/profile/" + friend?._id} key={friend?._id} className='w-full flex gap-4 items-center cursor-pointer'>
                                         <img src={friend?.profileUrl ?? NoProfile} alt={friend?.firstName} className='w-10 h-10 object-cover rounded-full' />
                                         <div className='flex-1'>
                                             <p className='text-base font-medium text-gray-950 dark:text-gray-50'>

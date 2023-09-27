@@ -178,16 +178,14 @@ export const likePost = async (req, res, next) => {
         const { userId } = req.body.user;
         const { id } = req.params;
 
-        const post = await Posts.findById(id);
+        let post = await Posts.findById(id);
 
         const index = post.likes.findIndex((pid) => pid === String(userId));
         if (index === -1) {
             post.likes.push(userId);
         } else {
-            post.likes.filter((pid) => pid !== String(userId));
+            post.likes = post.likes.filter((pid) => pid !== String(userId));
         }
-
-        console.log(post);
 
         const newPost = await Posts.findOneAndUpdate({ _id: id }, post, {
             new: true,
@@ -289,7 +287,7 @@ export const commentPost = async (req, res, next) => {
         const post = await Posts.findById(id);
         post.comments.push(newComment._id);
 
-        const updatedPost = await P(id, post, {
+        const updatedPost = await Posts.findOneAndUpdate({ _id: id }, post, {
             new: true,
         });
 

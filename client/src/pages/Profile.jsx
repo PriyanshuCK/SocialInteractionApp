@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { FriendsCard, Loading, PostCard, ProfileCard, TopBar } from "../components";
-import { posts } from '../assets/data';
-
+import { deletePost, fetchPosts, getUserInfo, likePost } from '../utils';
 
 const Profile = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.user);
     const [userInfo, setUserInfo] = useState(user);
-    // const { posts } = useSelector((state) => state.posts);
+    const { posts } = useSelector((state) => state.post);
     const [loading, setLoading] = useState(false);
 
-    const handleDelete = () => {
+    const uri = "/posts/get-user-post/" + id;
 
+    const getUser = async () => {
+        const res = await getUserInfo(user?.token, id);
+        setUserInfo(res);
     };
 
-    const handleLikePost = () => {
-
+    const getPosts = async () => {
+        await fetchPosts(user.token, dispatch, uri);
+        setLoading(false);
     };
+
+    const handleDelete = async (id) => {
+        await deletePost(id, user.token);
+        await getPosts();
+    };
+
+    const handleLikePost = async (uri) => {
+        await likePost({ uri: uri, token: user?.token });
+        await getPosts();
+    };
+
+    useEffect(() => {
+        setLoading(true);
+        getUser();
+        getPosts();
+    }, [id]);
 
     return (
         <>

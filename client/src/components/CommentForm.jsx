@@ -4,15 +4,44 @@ import { NoProfile } from '../assets';
 import TextInput from './TextInput';
 import Loading from './Loading';
 import CustomButton from './CustomButton';
+import { apiRequest } from '../utils';
 
 const CommentForm = ({ user, id, replyAt, getComments }) => {
     const [loading, setLoading] = useState(false);
     const [errMsg, setErrMsg] = useState("");
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm({ mode: "onChange" });
-
     const onSubmit = async (data) => {
+        setLoading(true);
+        setErrMsg("");
+        try {
+            const URL = !replyAt
+                ? "/posts/comment/" + id
+                : "/posts/reply-comment/" + id;
 
+            const newData = {
+                comment: data?.comment,
+                from: user?.firstName + " " + user.lastName,
+                replyAt: replyAt,
+            };
+            const res = await apiRequest({
+                url: URL,
+                data: newData,
+                token: user?.token,
+                method: "POST",
+            });
+
+            if (res?.status === "failed") {
+                setErrMsg(res);
+            } else {
+                reset({ comment: "" });
+                setErrMsg("");
+                await getComments();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        setLoading(false);
     };
 
     return (

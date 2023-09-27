@@ -5,7 +5,8 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 import TextInput from './TextInput';
 import Loading from './Loading';
 import CustomButton from './CustomButton';
-import { UpdateProfile } from '../redux/userSlice';
+import { UpdateProfile, UserLogin } from '../redux/userSlice';
+import { apiRequest, handleFileUpload } from '../utils';
 
 const EditProfile = () => {
     const { user } = useSelector((state) => state.user);
@@ -20,7 +21,43 @@ const EditProfile = () => {
     });
 
     const onSubmit = async (data) => {
+        setIsSubmitting(true);
+        setErrMsg("");
 
+        try {
+
+            const uri = picture && (await handleFileUpload(picture));
+            const { firstName, lastName, location, profession } = data;
+
+            const res = await apiRequest({
+                url: "/users/update-user",
+                data: {
+                    firstName,
+                    lastName,
+                    location,
+                    profession,
+                    profileUrl: uri ? uri : user?.profileUrl
+                },
+                method: "PUT",
+                token: user?.token
+            });
+
+            setErrMsg(res);
+
+            if (res?.status !== "failed") {
+                const newUser = { token: res?.token, ...res?.user };
+                dispatch(UserLogin(newUser));
+
+                setTimeout(() => {
+                    dispatch(UpdateProfile(false));
+                }, 1000);
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        setIsSubmitting(false);
     };
 
     const handleClose = () => {
@@ -43,7 +80,7 @@ const EditProfile = () => {
                         &#8203;
                         <div className='inline-block align-bottom bg-gray-50 dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full'
                             role='dialog'
-                            aria-model="true"
+                            aria-modal="true"
                             aria-labelledby='modal-headline'
                         >
                             <div className='flex justify-between px-6 pt-5 pb-2'>
