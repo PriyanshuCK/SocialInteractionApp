@@ -11,6 +11,7 @@ const Profile = () => {
     const [userInfo, setUserInfo] = useState(user);
     const { posts } = useSelector((state) => state.post);
     const [loading, setLoading] = useState(false);
+    // const [likes, setLikes] = useState(null);
 
     const uri = "/posts/get-user-post/" + id;
 

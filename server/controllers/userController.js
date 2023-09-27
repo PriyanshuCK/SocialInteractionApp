@@ -254,6 +254,10 @@ export const friendRequest = async (req, res, next) => {
 
         if (requestExist) {
             next("Friend Request already sent.");
+            res.status(500).json({
+                success: false,
+                message: "Friend Request already sent.",
+            });
             return;
         }
 
@@ -264,6 +268,10 @@ export const friendRequest = async (req, res, next) => {
 
         if (accountExist) {
             next("Friend Request already sent.");
+            res.status(500).json({
+                success: false,
+                message: "Friend Request already sent.",
+            });
             return;
         }
 

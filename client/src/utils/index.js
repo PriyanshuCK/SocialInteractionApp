@@ -2,7 +2,6 @@ import axios from "axios";
 import { SetPosts } from "../redux/postSlice.js";
 
 const API_URL = process.env.REACT_APP_APP_URL;
-console.log(API_URL);
 
 export const API = axios.create({
     baseURL: API_URL,
@@ -119,7 +118,7 @@ export const sendFriendRequest = async (id, token) => {
             data: { requestTo: id },
         });
 
-        return;
+        return res;
     } catch (error) {
         console.log(error);
     }

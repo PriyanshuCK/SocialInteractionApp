@@ -54,7 +54,6 @@ const Home = () => {
     };
 
     const fetchPost = async () => {
-        setLoading(true);
         await fetchPosts(user?.token, dispatch);
         setLoading(false);
     };
