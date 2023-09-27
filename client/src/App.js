@@ -15,7 +15,7 @@ function Layout() {
 function App() {
   const { theme } = useSelector((state) => state.theme);
   return (
-    <div data-theme={theme} className={`w-full min-h-[100vh] theme-sky ${theme}`}>
+    <div data-theme={theme} className={`w-full min-h-[100vh] theme-rose ${theme}`}>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
